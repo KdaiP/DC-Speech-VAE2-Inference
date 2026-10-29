@@ -14,17 +14,15 @@ from dataclasses import dataclass, field
 
 @dataclass
 class ModelConfig:
-    decoder_hidden_channels: int = 168
+    decoder_hidden_channels: int = 128
     decoder_c_mults: List[int] = field(default_factory=lambda: [1, 2, 4, 8, 16])
-    decoder_strides: List[int] = field(default_factory=lambda: [2, 6, 8, 10, 10])
-    decoder_activation: str = "silu"
+    decoder_strides: List[int] = field(default_factory=lambda: [2, 4, 6, 10, 10])
 
     encoder_hidden_channels: int = 256
-    encoder_c_mults: List[int] = field(default_factory=lambda: [1, 2, 4, 8, 16])
-    encoder_strides: List[int] = field(default_factory=lambda: [2, 2, 2, 2, 2])
-    encoder_activation: str = "snake"
+    encoder_c_mults: List[int] = field(default_factory=lambda: [1, 2, 4, 8])
+    encoder_strides: List[int] = field(default_factory=lambda: [2, 2, 2, 2])
 
-    bottleneck_channels: int = 256
+    bottleneck_channels: int = 128
     
     def __post_init__(self):
         _, self.mel_config = get_mel_transform()
@@ -45,7 +43,6 @@ class EncoderDecoder(nn.Module):
             channels=self.config.encoder_hidden_channels,
             c_mults=self.config.encoder_c_mults,
             strides=self.config.encoder_strides,
-            activation=self.config.encoder_activation,
         )
 
         self.bottleneck = nn.Conv1d(
@@ -60,7 +57,6 @@ class EncoderDecoder(nn.Module):
             latent_dim=self.config.bottleneck_channels,
             c_mults=self.config.decoder_c_mults,
             strides=self.config.decoder_strides,
-            activation=self.config.decoder_activation,
         )
 
     def encode(self, input_values):
